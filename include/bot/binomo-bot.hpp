@@ -25,6 +25,7 @@
 #define BINOMO_BOT_HPP_INCLUDED
 
 #include "binomo-bot-settings.hpp"
+#include "..\binomo-cpp-api.hpp"
 #include "..\binomo-cpp-api-http.hpp"
 #include "..\binomo-cpp-api-websocket.hpp"
 #include "named-pipe-server.hpp"
@@ -35,7 +36,10 @@ namespace binomo_bot {
 
     class BinomoBot {
     private:
-        std::shared_ptr<binomo_api::BinomoApiPriceStream<>> candlestick_streams;    /**< Поток котировок */
+        std::shared_ptr<binomo_api::BinomoApi> binomo_api;
+		std::mutex binomo_api_mutex;
+
+        std::shared_ptr<binomo_api::BinomoApiPriceStream<>> candlestick_streams;/**< Поток котировок */
 		std::mutex candlestick_streams_mutex;
 
         std::shared_ptr<binomo_api::BinomoApiHttp<>> binomo_http_api;
@@ -123,40 +127,49 @@ namespace binomo_bot {
          * \return Вернет true в случае успеха
          */
         bool init_main(Settings &settings) {
-            std::lock_guard<std::mutex> lock(binomo_http_api_mutex);
-			binomo_http_api = std::make_shared<binomo_api::BinomoApiHttp<>>(
-                    settings.sert_file,
-                    settings.cookie_file);
+            {
+                std::lock_guard<std::mutex> lock(binomo_http_api_mutex);
+                binomo_http_api = std::make_shared<binomo_api::BinomoApiHttp<>>(
+                        settings.binomo.sert_file,
+                        settings.binomo.cookie_file);
+            }
+            {
+                std::lock_guard<std::mutex> lock(binomo_api_mutex);
+                binomo_api = std::make_shared<binomo_api::BinomoApi>(
+                        settings.binomo.port);
+                binomo_api->start();
+            }
             return true;
         }
 
         bool init_candles_stream_mt4(Settings &settings) {
+            if (!settings.quotes_stream.is_use) return true;
             {
 				std::lock_guard<std::mutex> lock(binomo_http_api_mutex);
 				if(!binomo_http_api) return false;
 			}
-            if(is_error) return false;
 
+            if(is_error) return false;
 
 			{
 				std::lock_guard<std::mutex> lock(candlestick_streams_mutex);
-				candlestick_streams = std::make_shared<binomo_api::BinomoApiPriceStream<>>(settings.sert_file);
-				candlestick_streams->set_volume_mode(settings.volume_mode);
+				candlestick_streams = std::make_shared<binomo_api::BinomoApiPriceStream<>>(settings.binomo.sert_file);
+				candlestick_streams->set_volume_mode(settings.quotes_stream.volume_mode);
 			}
 
             /* проверяем параметры символов */
-            for(size_t i = 0; i < settings.symbols.size(); ++i) {
-				std::string s = binomo_api::common::normalize_symbol_name(settings.symbols[i].first);
+            for(size_t i = 0; i < settings.quotes_stream.symbols.size(); ++i) {
+				std::string s = binomo_api::common::normalize_symbol_name(settings.quotes_stream.symbols[i].first);
 				auto it = binomo_api::common::normalize_name_to_ric.find(s);
 				if(it == binomo_api::common::normalize_name_to_ric.end()) {
-					std::cerr << "binomo bot: symbol " << settings.symbols[i].first << " does not exist!" << std::endl;
+					std::cerr << "binomo bot: symbol " << settings.quotes_stream.symbols[i].first << " does not exist!" << std::endl;
 				}
-				switch(settings.symbols[i].second) {
+				switch(settings.quotes_stream.symbols[i].second) {
 				case 1:
 				case 5:
 				case 15:
 				case 30:
-                    std::cerr << "binomo bot: period " << settings.symbols[i].second << " does not exist!" << std::endl;
+                    std::cerr << "binomo bot: period " << settings.quotes_stream.symbols[i].second << " does not exist!" << std::endl;
 					return false;
                     break;
 				case xtime::SECONDS_IN_MINUTE:
@@ -168,7 +181,7 @@ namespace binomo_bot {
 				case xtime::SECONDS_IN_DAY:
 					continue;
 				default:
-					std::cerr << "binomo bot: period " << settings.symbols[i].second << " does not exist!" << std::endl;
+					std::cerr << "binomo bot: period " << settings.quotes_stream.symbols[i].second << " does not exist!" << std::endl;
 					return false;
 					break;
 				}
@@ -176,44 +189,44 @@ namespace binomo_bot {
 
             /* узнаем точность символов */
             std::vector<uint32_t> precisions;
-            for(size_t i = 0; i < settings.symbols.size(); ++i) {
-                auto it = binomo_api::common::normalize_name_to_precision.find(settings.symbols[i].first);
+            for(size_t i = 0; i < settings.quotes_stream.symbols.size(); ++i) {
+                auto it = binomo_api::common::normalize_name_to_precision.find(settings.quotes_stream.symbols[i].first);
 				if(it == binomo_api::common::normalize_name_to_precision.end()) {
-					std::cerr << "binomo bot: precision " << settings.symbols[i].second << " does not exist!" << std::endl;
+					std::cerr << "binomo bot: precision " << settings.quotes_stream.symbols[i].second << " does not exist!" << std::endl;
 					return false;
 				}
 				precisions.push_back(it->second);
-				if(precisions.back() <= settings.max_precisions) {
+				if(precisions.back() <= settings.quotes_stream.max_precisions) {
                     std::cout
-                        << "binomo bot: symbol " << settings.symbols[i].first
-                        << " period " << settings.symbols[i].second
+                        << "binomo bot: symbol " << settings.quotes_stream.symbols[i].first
+                        << " period " << settings.quotes_stream.symbols[i].second
                         << " precision " << precisions.back()
                         << std::endl;
                 } else {
                     std::cout
-                        << "binomo bot: symbol " << settings.symbols[i].first
-                        << " period " << settings.symbols[i].second
+                        << "binomo bot: symbol " << settings.quotes_stream.symbols[i].first
+                        << " period " << settings.quotes_stream.symbols[i].second
                         << " precision " << precisions.back()
-                        << " fix precision " << settings.max_precisions
+                        << " fix precision " << settings.quotes_stream.max_precisions
                         << std::endl;
                 }
             }
 
             /* инициализируем исторические данные MQL */
-            for(size_t i = 0; i < settings.symbols.size(); ++i) {
-                std::string mql_symbol_name = settings.symbols[i].first + settings.symbol_hst_suffix;
+            for(size_t i = 0; i < settings.quotes_stream.symbols.size(); ++i) {
+                std::string mql_symbol_name = settings.quotes_stream.symbols[i].first + settings.quotes_stream.symbol_hst_suffix;
                 if(mql_symbol_name.size() >= 11) mql_symbol_name = mql_symbol_name.substr(0,11);
                 mql_history.push_back(std::make_shared<binomo_api::MqlHst<>>(
                     mql_symbol_name,
-                    settings.path,
-                    settings.symbols[i].second/xtime::SECONDS_IN_MINUTE,
-                    std::min(precisions[i], settings.max_precisions),
-                    settings.timezone));
+                    settings.quotes_stream.path,
+                    settings.quotes_stream.symbols[i].second/xtime::SECONDS_IN_MINUTE,
+                    std::min(precisions[i], settings.quotes_stream.max_precisions),
+                    settings.quotes_stream.timezone));
             }
 
-            is_init_mql_history.resize(settings.symbols.size());
-            is_once_mql_history.resize(settings.symbols.size());
-            for(size_t i = 0; i < settings.symbols.size(); ++i) {
+            is_init_mql_history.resize(settings.quotes_stream.symbols.size());
+            is_once_mql_history.resize(settings.quotes_stream.symbols.size());
+            for(size_t i = 0; i < settings.quotes_stream.symbols.size(); ++i) {
                 is_init_mql_history.push_back(std::atomic<bool>(false));
                 is_once_mql_history.push_back(std::atomic<bool>(false));
                 //is_init_mql_history[i] = false;
@@ -237,7 +250,8 @@ namespace binomo_bot {
                 if(mql_history_size != 0) {
                     for(size_t i = 0; i < mql_history_size; ++i) {
                         /* проверяем соответствие параметров символа */
-                        if(settings.symbols[i].first != symbol || settings.symbols[i].second != period) continue;
+                        if (settings.quotes_stream.symbols[i].first != symbol ||
+                            settings.quotes_stream.symbols[i].second != period) continue;
 
                         /* проверяем наличие инициализации исторических данных */
                         if(is_init_mql_history[i] == false) continue;
@@ -307,7 +321,7 @@ namespace binomo_bot {
             };
 
             /* инициализируем потоки котировок */
-            candlestick_streams->add_candles_stream(settings.symbols);
+            candlestick_streams->add_candles_stream(settings.quotes_stream.symbols);
             candlestick_streams->start();
             candlestick_streams->wait();
 
@@ -315,12 +329,17 @@ namespace binomo_bot {
             std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
             /* загружаем исторические данные */
-            for(size_t i = 0; i < settings.symbols.size(); ++i) {
+            for(size_t i = 0; i < settings.quotes_stream.symbols.size(); ++i) {
                 const xtime::timestamp_t stop_date = xtime::get_first_timestamp_minute();
-                const xtime::timestamp_t start_date = stop_date - (settings.symbols[i].second * settings.candles);
+                const xtime::timestamp_t start_date = stop_date - (settings.quotes_stream.symbols[i].second * settings.quotes_stream.candles);
                 std::vector<binomo_api::common::Candle> candles;
 
-                int err = binomo_http_api->get_historical_data(candles, settings.symbols[i].first, settings.symbols[i].second, start_date, stop_date);
+                int err = binomo_http_api->get_historical_data(
+                    candles,
+                    settings.quotes_stream.symbols[i].first,
+                    settings.quotes_stream.symbols[i].second,
+                    start_date,
+                    stop_date);
 
                 for(size_t c = 0; c < candles.size(); ++c) {
                     binomo_api::common::Candle candle = candles[c];
@@ -334,9 +353,13 @@ namespace binomo_bot {
                 /* ставим флаг инициализации исторических данных */
                 is_init_mql_history[i] = true;
 
-                std::string mql_symbol_name = settings.symbols[i].first + settings.symbol_hst_suffix;
+                std::string mql_symbol_name = settings.quotes_stream.symbols[i].first + settings.quotes_stream.symbol_hst_suffix;
                 if(mql_symbol_name.size() >= 11) mql_symbol_name = mql_symbol_name.substr(0,11);
-                std::cout << "binomo bot: " << settings.symbols[i].first << " initialized as " << mql_symbol_name << ", candles = " << candles.size() << ", error code = " << err << std::endl;
+                std::cout << "binomo bot: "
+                    << settings.quotes_stream.symbols[i].first
+                    << " initialized as " << mql_symbol_name
+                    << ", candles = " << candles.size()
+                    << ", error code = " << err << std::endl;
             }
             return true;
         }
@@ -352,7 +375,7 @@ namespace binomo_bot {
 
 			std::lock_guard<std::mutex> lock(pipe_server_mutex);
 			pipe_server = std::make_shared<SimpleNamedPipe::NamedPipeServer>(
-				settings.named_pipe,
+				settings.bot.named_pipe,
 				buffer_size);
 
 
@@ -402,6 +425,64 @@ namespace binomo_bot {
             pipe_server->start();
             is_pipe_server = true;
             return true;
+        }
+
+        bool open_bo(
+                const std::string &symbol,
+                const double amount,
+                const int contract_type,
+                const uint32_t duration,
+                Settings &settings) {
+            std::lock_guard<std::mutex> lock(binomo_api_mutex);
+            if(binomo_api) {
+                binomo_api->open_bo(
+                    symbol,
+                    amount,
+                    contract_type,
+                    duration,
+                    settings.binomo.is_demo_account,
+                    [&](const binomo_api::common::Bet &bet){
+                    switch(bet.bet_status) {
+                        case binomo_api::common::BetStatus::UNKNOWN_STATE:
+                            //std::cout << "UNKNOWN_STATE" << std::endl;
+                        break;
+                        case binomo_api::common::BetStatus::CHECK_ERROR:
+                            //std::cout << "CHECK_ERROR" << std::endl;
+                            binomo_api::common::PrintThread{}
+                                << "binomo bot: bo-bet check error (server response), symbol = "
+                                << symbol << std::endl;
+                        break;
+                        case binomo_api::common::BetStatus::OPENING_ERROR:
+                            //std::cout << "CHECK_ERROR" << std::endl;
+                            binomo_api::common::PrintThread{}
+                                << "binomo bot: bo-bet opennig error (server response), symbol = "
+                                << symbol << std::endl;
+                        break;
+                        case binomo_api::common::BetStatus::STANDOFF:
+                            //std::cout << "STANDOFF" << std::endl;
+                        break;
+                        case binomo_api::common::BetStatus::WIN:
+                            //std::cout << "WIN" << std::endl;
+                            binomo_api::common::PrintThread{} << "binomo bot: " << bet.symbol_name << " win, id = " << bet.broker_bet_id << std::endl;
+                        break;
+                        case binomo_api::common::BetStatus::LOSS:
+                            //std::cout << "LOSS" << std::endl;
+                            binomo_api::common::PrintThread{} << "binomo bot: " << bet.symbol_name << " loss, id = " << bet.broker_bet_id << std::endl;
+                        break;
+                        case binomo_api::common::BetStatus::WAITING_COMPLETION:
+                            //std::cout << "WAITING_COMPLETION" << std::endl;
+                            binomo_api::common::PrintThread{}
+                                        << "binomo bot: bo-bet, symbol = "
+                                        << bet.symbol_name
+                                        << ", id = " << bet.broker_bet_id
+                                        << ", open time " << xtime::get_str_date_time(bet.opening_timestamp)
+                                        << std::endl;
+                        break;
+                    };
+                });
+                return true;
+            }
+            return false;
         }
 
 #if(0)

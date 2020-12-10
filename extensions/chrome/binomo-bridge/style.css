@@ -1,0 +1,18 @@
+/* фон расширения */
+html {
+	color: rgb(130,130,140);
+	background-color: rgb(40,40,60);
+	margin: 8px;
+}
+
+input {
+	color: rgb(130,130,140);
+	background-color: rgb(30,30,50);
+	margin: 8px;
+}
+
+button {
+	color: rgb(130,130,140);
+	background-color: rgb(50,50,70);
+	margin: 8px;
+}

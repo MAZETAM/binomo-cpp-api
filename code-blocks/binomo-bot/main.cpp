@@ -6,8 +6,8 @@
 
 #include "bot\binomo-bot.hpp"
 
-#define PROGRAM_VERSION "1.1"
-#define PROGRAM_DATE "08.10.2020"
+#define PROGRAM_VERSION "1.2"
+#define PROGRAM_DATE "10.12.2020"
 
 int main(int argc, char **argv) {
     std::cout << "binomo bot " << PROGRAM_VERSION << " ";
@@ -58,7 +58,29 @@ int main(int argc, char **argv) {
                 std::cout << "exit" << std::endl;
                 break;
                 default:
-                std::cout << c << std::endl;
+                if(settings.hotkeys.is_use) {
+                    for(size_t i = 0; i < settings.hotkeys.hotkey.size(); ++i) {
+                        std::string keys = settings.hotkeys.hotkey[i].key;
+                        for(size_t k = 0; k < keys.size(); ++k) {
+                            if(keys[k] == c) {
+                                binomobot.open_bo(
+                                    settings.hotkeys.hotkey[i].symbol,
+                                    settings.hotkeys.hotkey[i].amount,
+                                    settings.hotkeys.hotkey[i].direction,
+                                    settings.hotkeys.hotkey[i].duration,
+                                    settings);
+                                std::cout
+                                    << "binomo bot: press hot key: " << c
+                                    << ", open bo-bet, symbol = "
+                                    << settings.hotkeys.hotkey[i].symbol
+                                    << std::endl;
+                                break;
+                            }
+                        }
+                    }
+                } else {
+                    std::cout << "binomo bot: press key: " << c << std::endl;
+                }
                 break;
             }
         } // if
