@@ -68,7 +68,7 @@ namespace binomo_api {
         using candle_data = std::map<xtime::timestamp_t, CANDLE>;
         using period_data = std::map<uint32_t, candle_data>;
         std::map<std::string, period_data> candles;
-        std::mutex candles_mutex;
+        std::recursive_mutex candles_mutex;
 
         std::atomic<bool> is_websocket_init;    /**< Состояние соединения */
         std::atomic<bool> is_error;             /**< Ошибка соединения */
@@ -187,7 +187,7 @@ namespace binomo_api {
                                 list_period = it_list_symbol->second;
                             }
 
-                            std::lock_guard<std::mutex> lock(candles_mutex);
+                            std::lock_guard<std::recursive_mutex> lock(candles_mutex);
                             for(auto &p : list_period) {
 
                                 /* в ходе наблюдений было обнаружено,
@@ -442,7 +442,7 @@ namespace binomo_api {
                 const size_t offset = 0) {
             if(!is_websocket_init) return CANDLE();
             std::string s = common::to_upper_case(symbol);
-            std::lock_guard<std::mutex> lock(candles_mutex);
+            std::lock_guard<std::recursive_mutex> lock(candles_mutex);
             auto it_symbol = candles.find(s);
             if(it_symbol == candles.end()) return CANDLE();
             auto it_period = it_symbol->second.find(period);
@@ -485,7 +485,7 @@ namespace binomo_api {
                 const xtime::timestamp_t timestamp) {
             if(!is_websocket_init) return CANDLE();
             std::string s = common::to_upper_case(symbol);
-            std::lock_guard<std::mutex> lock(candles_mutex);
+            std::lock_guard<std::recursive_mutex> lock(candles_mutex);
             auto it_symbol = candles.find(s);
             if(it_symbol == candles.end()) return CANDLE();
             auto it_period = it_symbol->second.find(period);

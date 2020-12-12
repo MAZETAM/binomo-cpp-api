@@ -36,8 +36,8 @@ namespace binomo_bot {
 
     class BinomoBot {
     private:
-        std::shared_ptr<binomo_api::BinomoApi> binomo_api;
-		std::mutex binomo_api_mutex;
+        std::shared_ptr<binomo_api::BinomoApi> api;
+		std::mutex api_mutex;
 
         std::shared_ptr<binomo_api::BinomoApiPriceStream<>> candlestick_streams;/**< Поток котировок */
 		std::mutex candlestick_streams_mutex;
@@ -51,7 +51,11 @@ namespace binomo_bot {
         std::vector<std::shared_ptr<binomo_api::MqlHst<>>> mql_history;
 		std::mutex mql_history_mutex;
 
+		std::atomic<int> update_ping_tick = ATOMIC_VAR_INIT(0);
+
         std::atomic<bool> is_pipe_server = ATOMIC_VAR_INIT(false);
+
+        std::atomic<bool> is_last_connected = ATOMIC_VAR_INIT(false);
 
         template <typename T>
         struct atomwrapper {
@@ -111,10 +115,10 @@ namespace binomo_bot {
                     }
                 }
                 catch(const std::exception &e) {
-                    std::cerr <<"Error: BinanceApi::clear_request_future(), what: " << e.what() << std::endl;
+                    std::cerr <<"binomo bot: error in BinanceApi::clear_request_future(), what: " << e.what() << std::endl;
                 }
                 catch(...) {
-                    std::cerr <<"Error: BinanceApi::clear_request_future()" << std::endl;
+                    std::cerr <<"binomo bot: error in BinanceApi::clear_request_future()" << std::endl;
                 }
                 ++index;
             }
@@ -134,10 +138,10 @@ namespace binomo_bot {
                         settings.binomo.cookie_file);
             }
             {
-                std::lock_guard<std::mutex> lock(binomo_api_mutex);
-                binomo_api = std::make_shared<binomo_api::BinomoApi>(
+                std::lock_guard<std::mutex> lock(api_mutex);
+                api = std::make_shared<binomo_api::BinomoApi>(
                         settings.binomo.port);
-                binomo_api->start();
+                api->start();
             }
             return true;
         }
@@ -197,13 +201,13 @@ namespace binomo_bot {
 				}
 				precisions.push_back(it->second);
 				if(precisions.back() <= settings.quotes_stream.max_precisions) {
-                    std::cout
+                    binomo_api::common::PrintThread{}
                         << "binomo bot: symbol " << settings.quotes_stream.symbols[i].first
                         << " period " << settings.quotes_stream.symbols[i].second
                         << " precision " << precisions.back()
                         << std::endl;
                 } else {
-                    std::cout
+                    binomo_api::common::PrintThread{}
                         << "binomo bot: symbol " << settings.quotes_stream.symbols[i].first
                         << " period " << settings.quotes_stream.symbols[i].second
                         << " precision " << precisions.back()
@@ -239,7 +243,9 @@ namespace binomo_bot {
                     const binomo_api::common::Candle &candle,
                     const uint32_t period,
                     const bool close_candle) {
-                //std::cout << "--symbol " << symbol << std::endl;
+
+                //std::cout << "--symbol00 " << symbol << std::endl;
+
                 /* получаем размер массива исторических даных MQL */
                 size_t mql_history_size = 0;
                 {
@@ -263,6 +269,8 @@ namespace binomo_bot {
                             last_timestamp = mql_history[i]->get_last_timestamp();
                         }
 
+                        if(last_timestamp == 0) continue;
+
                         /* проверяем, была ли только что загрузка исторических данных */
                         if(is_once_mql_history[i] == false) {
                             ///std::cout << "TIME once last_timestamp " << xtime::get_str_date_time(last_timestamp) << std::endl;
@@ -273,9 +281,7 @@ namespace binomo_bot {
                             if(candle.timestamp > last_timestamp) {
                                 /* добавляем пропущенные исторические данные, не включая текущий бар */
                                 const xtime::timestamp_t step_time = period;// * xtime::SECONDS_IN_MINUTE;
-
                                 //std::cout << "step_time " << step_time << std::endl;
-
                                 for(xtime::timestamp_t t = last_timestamp; t < candle.timestamp; t += step_time) {
                                     binomo_api::common::Candle streams_old_candle = candlestick_streams->get_timestamp_candle(symbol, period, t);
                                     std::lock_guard<std::mutex> lock(mql_history_mutex);
@@ -304,6 +310,7 @@ namespace binomo_bot {
                         }
                     }
                 }
+
 #               if(0)
                 /* выводим сообщение о символе */
                 std::cout
@@ -355,7 +362,9 @@ namespace binomo_bot {
 
                 std::string mql_symbol_name = settings.quotes_stream.symbols[i].first + settings.quotes_stream.symbol_hst_suffix;
                 if(mql_symbol_name.size() >= 11) mql_symbol_name = mql_symbol_name.substr(0,11);
-                std::cout << "binomo bot: "
+
+                binomo_api::common::PrintThread{}
+                    << "binomo bot: "
                     << settings.quotes_stream.symbols[i].first
                     << " initialized as " << mql_symbol_name
                     << ", candles = " << candles.size()
@@ -366,8 +375,8 @@ namespace binomo_bot {
 
         bool init_pipe_server(Settings &settings) {
             {
-				std::lock_guard<std::mutex> lock(binomo_http_api_mutex);
-				if(!binomo_http_api) return false;
+				std::lock_guard<std::mutex> lock(api_mutex);
+				if(!api) return false;
 			}
             if(is_error) return false;
 
@@ -380,34 +389,189 @@ namespace binomo_bot {
 
 
             pipe_server->on_open = [&](SimpleNamedPipe::NamedPipeServer::Connection* connection) {
-                binomo_api::common::PrintThread{} << "binomo bot: named pipe open, handle = " << connection->get_handle() << std::endl;
-#if(0)
-                /* отправляем баланс при первом подключении */
-                if(user_data_streams) {
-                    std::vector<BalanceSpec> balances = user_data_streams->get_all_balance();
-                    for(size_t i = 0; i < balances.size(); ++i) {
-                        pipe_server->send_all(
-                            "{\"asset\":\"" +
-                            balances[i].asset +
-                            "\",\"wallet_balance\":" +
-                            std::to_string(balances[i].wallet_balance) +
-                            ",\"cross_wallet_balance\":" +
-                            std::to_string(balances[i].cross_wallet_balance) +
-                            "}");
+                {
+                    std::lock_guard<std::mutex> lock(api_mutex);
+                    if(api) {
+                        is_last_connected = api->connected();
+                        if(is_last_connected) {
+                            std::lock_guard<std::mutex> lock(pipe_server_mutex);
+                            pipe_server->send_all("{\"connection\":1}");
+                        } else {
+                            std::lock_guard<std::mutex> lock(pipe_server_mutex);
+                            pipe_server->send_all("{\"connection\":0}");
+                        }
+                    } else {
+                        std::lock_guard<std::mutex> lock(pipe_server_mutex);
+                        pipe_server->send_all("{\"connection\":0}");
                     }
                 }
-#endif
-                /* отправляем состояние "подключено" */
-                pipe_server->send_all("{\"connection\":1}");
+                binomo_api::common::PrintThread{} << "binomo bot: named pipe open, handle = " << connection->get_handle() << std::endl;
             };
 
             pipe_server->on_message = [&,settings](SimpleNamedPipe::NamedPipeServer::Connection* connection, const std::string &in_message) {
                 /* обрабатываем входящие сообщения */
+
                 //std::cout << "message " << in_message << ", handle: " << connection->get_handle() << std::endl;
+
                 /* парисм */
                 try {
+                    json j = json::parse(in_message);
 
-                }
+                    if(j.find("pong") != j.end()) {
+                        binomo_api::common::PrintThread{} << "binomo bot: MT4 send pong" << std::endl;
+                    } else
+                    if(j.find("ping") != j.end()) {
+                        binomo_api::common::PrintThread{} << "binomo bot: MT4 send ping" << std::endl;
+                    } else
+                    if(j.find("contract") != j.end()) {
+                        /* пришел запрос на открытие сделки */
+
+                        json j_contract = j["contract"];
+
+                        /* параметры опциона */
+                        std::string symbol;
+                        std::string note;
+                        double amount = 0;
+                        int contract_type = binomo_api::common::INVALID_CONTRACT_TYPE;
+                        uint32_t duration = 0;
+                        xtime::timestamp_t date_expiry = 0;
+                        uint64_t api_bet_id = 0;
+
+                        /* получаем все параметры опциона */
+                        if(j_contract.find("s") != j_contract.end()) {
+                            symbol = j_contract["s"];
+                            symbol.erase(std::remove(symbol.begin(),symbol.end(), '/'), symbol.end());
+                            symbol.erase(std::remove(symbol.begin(),symbol.end(), '\\'), symbol.end());
+                            if(symbol.size() > 6) symbol = symbol.substr(0,6);
+                        }
+                        if(j_contract.find("note") != j_contract.end()) {
+                            note = j_contract["note"];
+                        }
+                        if(j_contract.find("a") != j_contract.end()) {
+                            amount = j_contract["a"];
+                        }
+                        if(j_contract.find("dir") != j_contract.end()) {
+                            if(j_contract["dir"] == "BUY") contract_type = binomo_api::common::BUY;
+                            else if(j_contract["dir"] == "SELL") contract_type = binomo_api::common::SELL;
+                        }
+                        if(j_contract.find("exp") != j_contract.end()) {
+                            if(j_contract["exp"].is_number()) {
+                                /* проверяем инициализацию api и блокируем умную ссылку */
+                                std::lock_guard<std::mutex> lock(api_mutex);
+                                if(!api) {
+                                    const xtime::timestamp_t timestamp_server = api->get_server_timestamp();
+                                    xtime::timestamp_t temp_date_expiry = j_contract["exp"];
+                                    if(temp_date_expiry < xtime::SECONDS_IN_DAY) {
+                                        /* пользователь задал время экспирации */
+                                        date_expiry = api->get_classic_bo_closing_timestamp(
+                                            timestamp_server,
+                                            (temp_date_expiry / xtime::SECONDS_IN_MINUTE));
+                                    } else {
+                                        /* пользователь задал дату экспирации */
+                                        date_expiry = temp_date_expiry;
+                                    }
+                                }
+                                /* */
+                            }
+                        } else
+                        if(j_contract.find("dur") != j_contract.end()) {
+                            if(j_contract["dur"].is_number()) {
+                                duration = j_contract["dur"];
+                            }
+                        }
+
+                        /* фильтр времени торговли */
+                        if(settings.time_filter.periods.size() != 0 && settings.time_filter.is_use) {
+
+                            /* проверяем инициализацию api и блокируем умную ссылку */
+                            std::lock_guard<std::mutex> lock(api_mutex);
+                            if(!api) return;
+                            /* */
+
+                            const uint32_t second_day = xtime::get_second_day(api->get_server_timestamp());
+                            bool is_found_time = false;
+                            for(size_t i = 0; i < settings.time_filter.periods.size(); ++i) {
+                                const uint32_t start_second_day = settings.time_filter.periods[i].first;
+                                const uint32_t stop_second_day = settings.time_filter.periods[i].second;
+
+                                if (start_second_day <= stop_second_day &&
+                                    second_day >= start_second_day &&
+                                    second_day <= stop_second_day) {
+                                    is_found_time = true;
+                                } else
+                                if (start_second_day > stop_second_day &&
+                                    (second_day >= start_second_day ||
+                                    second_day <= stop_second_day)) {
+                                    is_found_time = true;
+                                }
+                            }
+                            if(!is_found_time) {
+                                binomo_api::common::PrintThread{}
+                                    << "binomo bot: skip bet " << symbol
+                                    << ", time filter triggered, time = " << xtime::get_str_time_ms(api->get_server_timestamp())
+                                    << std::endl;
+                                return;
+                            }
+                        }
+
+                        if (symbol.size() > 0 && amount > 0 && duration > 0 &&
+                            (contract_type == binomo_api::common::BUY ||
+                            contract_type == binomo_api::common::SELL)) {
+
+                            /* проверяем инициализацию api и блокируем умную ссылку */
+                            std::lock_guard<std::mutex> lock(api_mutex);
+                            if(!api) return;
+                            /* */
+                            api->open_bo(
+                                symbol,
+                                amount,
+                                contract_type,
+                                duration,
+                                settings.binomo.is_demo_account,
+                                [&](const binomo_api::common::Bet &bet){
+                                switch(bet.bet_status) {
+                                    case binomo_api::common::BetStatus::UNKNOWN_STATE:
+                                        //std::cout << "UNKNOWN_STATE" << std::endl;
+                                    break;
+                                    case binomo_api::common::BetStatus::CHECK_ERROR:
+                                        //std::cout << "CHECK_ERROR" << std::endl;
+                                        binomo_api::common::PrintThread{}
+                                            << "binomo bot: bo-bet check error (server response), symbol = "
+                                            << symbol << std::endl;
+                                    break;
+                                    case binomo_api::common::BetStatus::OPENING_ERROR:
+                                        //std::cout << "CHECK_ERROR" << std::endl;
+                                        binomo_api::common::PrintThread{}
+                                            << "binomo bot: bo-bet opennig error (server response), symbol = "
+                                            << symbol << std::endl;
+                                    break;
+                                    case binomo_api::common::BetStatus::STANDOFF:
+                                        //std::cout << "STANDOFF" << std::endl;
+                                    break;
+                                    case binomo_api::common::BetStatus::WIN:
+                                        //std::cout << "WIN" << std::endl;
+                                        binomo_api::common::PrintThread{} << "binomo bot: " << bet.symbol_name << " win, id = " << bet.broker_bet_id << std::endl;
+                                    break;
+                                    case binomo_api::common::BetStatus::LOSS:
+                                        //std::cout << "LOSS" << std::endl;
+                                        binomo_api::common::PrintThread{} << "binomo bot: " << bet.symbol_name << " loss, id = " << bet.broker_bet_id << std::endl;
+                                    break;
+                                    case binomo_api::common::BetStatus::WAITING_COMPLETION:
+                                        //std::cout << "WAITING_COMPLETION" << std::endl;
+                                        binomo_api::common::PrintThread{}
+                                                    << "binomo bot: bo-bet, symbol = "
+                                                    << bet.symbol_name
+                                                    << ", id = " << bet.broker_bet_id
+                                                    << ", open time " << xtime::get_str_date_time(bet.opening_timestamp)
+                                                    << std::endl;
+                                    break;
+                                };
+                            });
+                        } // if (symbol.size() > 0 && amount > 0 && duration > 0 &&
+                          // (contract_type == intrade_bar_common::BUY ||
+                          // contract_type == intrade_bar_common::SELL))
+                    } // if(j.find("contract") != j.end())
+                } // try
                 catch(...) {
                     binomo_api::common::PrintThread{} << "binomo bot: named pipe error, json::parse" << std::endl;
                 }
@@ -424,7 +588,43 @@ namespace binomo_bot {
             /* запускаем сервер */
             pipe_server->start();
             is_pipe_server = true;
+            binomo_api::common::PrintThread{} << "binomo bot: start named pipe server" << std::endl;
             return true;
+        }
+
+        /** \brief Обновить пинг
+         * \param delay Задержка между вызовом метода
+         */
+        void update_ping(const int delay) {
+            const int MAX_TICK = 30000;
+            update_ping_tick += delay;
+            if(update_ping_tick > MAX_TICK) {
+                update_ping_tick = 0;
+                std::lock_guard<std::mutex> lock(pipe_server_mutex);
+                if(pipe_server) {
+                    pipe_server->send_all("{\"ping\":1}");
+                    binomo_api::common::PrintThread{} << "binomo bot: send ping" << std::endl;
+                }
+            }
+        }
+
+        /** \brief Обновить состояние соединения
+         */
+        void update_connection() {
+            {
+                std::lock_guard<std::mutex> lock(api_mutex);
+                if(!api) return;
+                if(is_last_connected == api->connected()) return;
+                is_last_connected = api->connected();
+            }
+            if(is_last_connected) {
+                std::lock_guard<std::mutex> lock(pipe_server_mutex);
+                if(pipe_server) pipe_server->send_all("{\"connection\":1}");
+            } else {
+                std::lock_guard<std::mutex> lock(pipe_server_mutex);
+                if(pipe_server) pipe_server->send_all("{\"connection\":0}");
+            }
+            binomo_api::common::PrintThread{} << "binomo bot: connection: " << is_last_connected << std::endl;
         }
 
         bool open_bo(
@@ -433,9 +633,9 @@ namespace binomo_bot {
                 const int contract_type,
                 const uint32_t duration,
                 Settings &settings) {
-            std::lock_guard<std::mutex> lock(binomo_api_mutex);
-            if(binomo_api) {
-                binomo_api->open_bo(
+            std::lock_guard<std::mutex> lock(api_mutex);
+            if(api) {
+                api->open_bo(
                     symbol,
                     amount,
                     contract_type,
@@ -513,15 +713,15 @@ namespace binomo_bot {
                             request_future[i].get();
                         }
                         catch(const std::exception &e) {
-                            std::cerr <<"Error: BinomoBot::~BinomoBot(), waht: request_future, exception: " << e.what() << std::endl;
+                            std::cerr <<"binomo bot: error in ~BinomoBot(), waht: request_future, exception: " << e.what() << std::endl;
                         }
                         catch(...) {
-                            std::cerr <<"Error: BinomoBot::~BinomoBot(), waht: request_future" << std::endl;
+                            std::cerr <<"binomo bot: error in ~BinomoBot(), waht: request_future" << std::endl;
                         }
-                    }
-                }
+                    } // if
+                } // for i
             }
-        }
+        } //
     };
 
 }

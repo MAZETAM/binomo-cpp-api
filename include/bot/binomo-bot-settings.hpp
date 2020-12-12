@@ -219,7 +219,7 @@ namespace binomo_bot {
         bool parser(json &j) {
             try {
                 json j_hotkeys = j["hotkeys"];
-                json j_array_hotkeys = j_hotkeys["array"];
+                json j_array_hotkeys = j_hotkeys["keys"];
                 hotkey.resize(j_array_hotkeys.size());
                 for(size_t i = 0; i < j_array_hotkeys.size(); ++i) {
                     hotkey[i].parser(j_array_hotkeys[i]);
@@ -249,6 +249,71 @@ namespace binomo_bot {
         }
     };
 
+    class TimeFilterSettings {
+    public:
+        std::vector<std::pair<uint32_t, uint32_t>> periods; /**< Фильтр торгового времени */
+        bool is_use = false;
+
+        bool parser(json &j) {
+            try {
+                if(j["time_filter"] != nullptr) {
+                    if(j["time_filter"]["use"] != nullptr) is_use = j["time_filter"]["use"];
+                    if(is_use) {
+                        json j_intervals = j["time_filter"]["intervals"];
+                        int32_t offset_time = 0;
+                        if(j["time_filter"]["offset"] != nullptr) {
+                            json j_offset = j["time_filter"]["offset"];
+                            const uint32_t offset_hour = j_offset["hour"];
+                            const uint32_t offset_minute = j_offset["minute"];
+                            const uint32_t offset_second = j_offset["second"];
+                            offset_time = offset_hour * xtime::SECONDS_IN_HOUR +  offset_minute * xtime::SECONDS_IN_MINUTE + offset_second;
+                        }
+                        if(j_intervals.is_array()) {
+                            const size_t time_filter_size = j_intervals.size();
+                            for(size_t i = 0; i < time_filter_size; ++i) {
+                                const uint32_t start_hour = j_intervals[i]["start"]["hour"];
+                                const uint32_t start_minute = j_intervals[i]["start"]["minute"];
+                                const uint32_t start_second = j_intervals[i]["start"]["second"];
+
+                                const uint32_t stop_hour = j_intervals[i]["stop"]["hour"];
+                                const uint32_t stop_minute = j_intervals[i]["stop"]["minute"];
+                                const uint32_t stop_second = j_intervals[i]["stop"]["second"];
+
+                                int32_t start_time = start_hour * xtime::SECONDS_IN_HOUR +  start_minute * xtime::SECONDS_IN_MINUTE + start_second + offset_time;
+                                int32_t stop_time = stop_hour * xtime::SECONDS_IN_HOUR +  stop_minute * xtime::SECONDS_IN_MINUTE + stop_second + offset_time;
+                                if(start_time < 0) start_time += xtime::SECONDS_IN_DAY;
+                                if(stop_time < 0) stop_time += xtime::SECONDS_IN_DAY;
+                                if(start_time > xtime::SECONDS_IN_DAY) start_time -= xtime::SECONDS_IN_DAY;
+                                if(stop_time > xtime::SECONDS_IN_DAY) stop_time -= xtime::SECONDS_IN_DAY;
+                                periods.push_back(std::make_pair((uint32_t)start_time, (uint32_t)stop_time));
+                            } // for
+                        } // if j_intervals.is_array()
+                    } // if is_use_time_filter
+                }
+            }
+            catch(const json::parse_error& e) {
+                std::cerr << "intrade.bar bot: json::parse_error, what: " << e.what()
+                   << " exception_id: " << e.id << std::endl;
+                return false;
+            }
+            catch(json::out_of_range& e) {
+                std::cerr << "intrade.bar bot: json::out_of_range, what:" << e.what()
+                   << " exception_id: " << e.id << std::endl;
+                return false;
+            }
+            catch(json::type_error& e) {
+                std::cerr << "intrade.bar bot: json::type_error, what:" << e.what()
+                   << " exception_id: " << e.id << std::endl;
+                return false;
+            }
+            catch(...) {
+                std::cerr << "intrade.bar bot: json error" << std::endl;
+                return false;
+            }
+            return true;
+        }
+    };
+
     /** \brief Класс настроек
      */
     class Settings {
@@ -259,6 +324,7 @@ namespace binomo_bot {
         QuotesStreamSettings quotes_stream;
         BotSettings bot;
         HotkeysSettings hotkeys;
+        TimeFilterSettings time_filter;
 
         bool is_error = false;
 

@@ -72,6 +72,7 @@ namespace binomo_api {
         enum ContractType {
             BUY = 1,
             SELL = -1,
+
         };
 
         /** \brief Класс для хранения бара

@@ -1154,7 +1154,9 @@ namespace binomo_api {
         * \param expiration Экспирация (в минутах)
         * \return Вернет метку времени закрытия CLASSIC бинарного опциона либо 0, если ошибка.
         */
-        xtime::timestamp_t get_classic_bo_closing_timestamp(const xtime::timestamp_t user_timestamp, const uint32_t user_expiration) {
+        xtime::timestamp_t get_classic_bo_closing_timestamp(
+                const xtime::timestamp_t user_timestamp,
+                const uint32_t user_expiration) {
             if (user_expiration < 1 ||
                 (user_expiration > 5 && user_expiration % 15 != 0) ||
                 user_expiration > 60) return 0;
@@ -1178,7 +1180,7 @@ namespace binomo_api {
          * \param note Заметка сделки
          * \param amount Размер ставки
          * \param contract_type Тип контракта (BUY или SELL)
-         * \param duration Длительность экспирации опциона
+         * \param duration Длительность экспирации опциона (секунды)
          * \param open_timestamp_offset Смещение времени открытия
          * \param is_demo_account Торговать демо аккаунт
          * \param callback Функция для обратного вызова
@@ -1201,7 +1203,7 @@ namespace binomo_api {
                 is_demo,
                 contract_type,
                 timestamp,
-                get_classic_bo_closing_timestamp(timestamp, duration),
+                get_classic_bo_closing_timestamp(timestamp, duration / xtime::SECONDS_IN_MINUTE),
                 api_bet_id,
                 callback);
         }
