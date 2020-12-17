@@ -6,8 +6,8 @@
 
 #include "bot\binomo-bot.hpp"
 
-#define PROGRAM_VERSION "1.1"
-#define PROGRAM_DATE "08.10.2020"
+#define PROGRAM_VERSION "1.3"
+#define PROGRAM_DATE "12.12.2020"
 
 int main(int argc, char **argv) {
     std::cout << "binomo bot " << PROGRAM_VERSION << " ";
@@ -22,22 +22,22 @@ int main(int argc, char **argv) {
 
     std::cout << "binomo bot: initialization start" << std::endl << std::endl;
 
-    binomo_bot::BinomoBot binomobot;
+    binomo_bot::BinomoBot bot;
 
     /* инициализируем основные настройки */
-    if(!binomobot.init_main(settings)) {
+    if(!bot.init_main(settings)) {
         std::cout << "binomo bot: BinomoBot--->init_main() error" << std::endl;
         std::system("pause");
         return EXIT_FAILURE;
     }
 
-    if(!binomobot.init_candles_stream_mt4(settings)) {
+    if(!bot.init_candles_stream_mt4(settings)) {
         std::cout << "binomo bot: BinomoBot--->init_candles_stream_mt4() error" << std::endl;
         std::system("pause");
         return EXIT_FAILURE;
     }
 
-    if(!binomobot.init_pipe_server(settings)) {
+    if(!bot.init_pipe_server(settings)) {
         std::cout << "binomo bot: BinomoBot--->init_pipe_server() error" << std::endl;
         std::system("pause");
         return EXIT_FAILURE;
@@ -58,12 +58,46 @@ int main(int argc, char **argv) {
                 std::cout << "exit" << std::endl;
                 break;
                 default:
-                std::cout << c << std::endl;
+                if(settings.hotkeys.is_use) {
+                    for(size_t i = 0; i < settings.hotkeys.hotkey.size(); ++i) {
+                        std::string keys = settings.hotkeys.hotkey[i].key;
+                        for(size_t k = 0; k < keys.size(); ++k) {
+                            if(keys[k] == c) {
+                                bot.open_bo(
+                                    settings.hotkeys.hotkey[i].symbol,
+                                    settings.hotkeys.hotkey[i].amount,
+                                    settings.hotkeys.hotkey[i].direction,
+                                    settings.hotkeys.hotkey[i].duration,
+                                    settings);
+
+                                binomo_api::common::PrintThread{}
+                                    << "binomo bot: press hot key: " << c
+                                    << std::endl;
+
+                                binomo_api::common::PrintThread{}
+                                    << settings.hotkeys.hotkey[i].symbol
+                                    << ", amount = "
+                                    << settings.hotkeys.hotkey[i].amount
+                                    << ", duration = "
+                                    << settings.hotkeys.hotkey[i].duration
+                                    << ", direction = "
+                                    << settings.hotkeys.hotkey[i].direction
+                                    << std::endl;
+                                break;
+                            }
+                        }
+                    }
+                } else {
+                    std::cout << "binomo bot: press key: " << c << std::endl;
+                }
                 break;
             }
         } // if
         if(is_exit) break;
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        const int DELAY = 100;
+        bot.update_ping(DELAY);
+        bot.update_connection();
+        std::this_thread::sleep_for(std::chrono::milliseconds(DELAY));
     }
     return 0;
 }

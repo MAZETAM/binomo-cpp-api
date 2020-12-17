@@ -30,25 +30,303 @@
 namespace binomo_bot {
     using json = nlohmann::json;
 
+    class BinomoSettings {
+    public:
+        uint32_t port = 8082;
+        std::string sert_file = "curl-ca-bundle.crt";       /**< Файл сертификата */
+        std::string cookie_file = "binomo.cookie";     /**< Файл cookie */
+
+        bool is_demo_account = true;    /**< Флаг использования демо счета */
+
+        bool parser(json &j) {
+            try {
+                json j_binomo = j["binomo"];
+                if(j_binomo["port"] != nullptr) port = j_binomo["port"];
+                if(j_binomo["cookie_file"] != nullptr) cookie_file = j_binomo["cookie_file"];
+                if(j_binomo["sert_file"] != nullptr) sert_file = j_binomo["sert_file"];
+                if(j_binomo["demo"] != nullptr) is_demo_account = j_binomo["demo"];
+                if(j_binomo["demo_account"] != nullptr) is_demo_account = j_binomo["demo_account"];
+            }
+            catch(const json::parse_error& e) {
+                std::cerr << "binomo bot: BinomoSettings json::parse_error, what: " << e.what()
+                   << " exception_id: " << e.id << std::endl;
+                return false;
+            }
+            catch(json::out_of_range& e) {
+                std::cerr << "binomo bot: BinomoSettings json::out_of_range, what:" << e.what()
+                   << " exception_id: " << e.id << std::endl;
+                return false;
+            }
+            catch(json::type_error& e) {
+                std::cerr << "binomo bot: BinomoSettings json::type_error, what:" << e.what()
+                   << " exception_id: " << e.id << std::endl;
+                return false;
+            }
+            catch(...) {
+                std::cerr << "binomo bot: BinomoSettings json error" << std::endl;
+                return false;
+            }
+            return true;
+        }
+    };
+
+    class QuotesStreamSettings {
+    public:
+        std::string path;
+        //std::string sert_file = "curl-ca-bundle.crt";       /**< Файл сертификата */
+        //std::string cookie_file = "binomo.cookie";          /**< Файл cookie */
+        std::string symbol_hst_suffix;                      /**< Суффикс имени символа автономных графиков */
+
+        std::vector<std::pair<std::string, uint32_t>> symbols;
+
+        uint32_t candles = 1440;                            /**< Количество баров истории */
+        uint32_t max_precisions = 6;                        /**< Максимальная точность котировок, выступает в роли ограничителя */
+        int64_t timezone = 0;                               /**< Часовой пояс - смещение метки времени котировок на указанное число секунд */
+        int volume_mode = 0;                                /**< Режим работы объемов (0 - отключено, 1 - подсчет тиков, 2 - взвешенный подсчет тиков) */
+
+        bool is_use = false;
+
+        bool parser(json &j) {
+            try {
+                json j_quotes = j["quotes"];
+                if(j_quotes["volume_mode"] != nullptr) volume_mode = j_quotes["volume_mode"];
+                if(j_quotes["symbol_hst_suffix"] != nullptr) symbol_hst_suffix = j_quotes["symbol_hst_suffix"];
+                if(j_quotes["candles"] != nullptr) candles = j_quotes["candles"];
+                if(j_quotes["max_precisions"] != nullptr) max_precisions = j_quotes["max_precisions"];
+                if(j_quotes["timezone"] != nullptr) timezone = j_quotes["timezone"];
+                if(j_quotes["path"] != nullptr) path = j_quotes["path"];
+                if(j_quotes["symbols"] != nullptr && j_quotes["symbols"].is_array()) {
+                    const size_t symbols_size = j_quotes["symbols"].size();
+                    for(size_t i = 0; i < symbols_size; ++i) {
+                        const std::string symbol = j_quotes["symbols"][i]["symbol"];
+                        const uint32_t period = j_quotes["symbols"][i]["period"];
+                        symbols.push_back(std::make_pair(symbol,period));
+                    }
+                }
+                if(j_quotes["use"] != nullptr) is_use = j_quotes["use"];
+                if(is_use && (path.size() == 0 || symbols.size() == 0)) return false;
+            }
+            catch(const json::parse_error& e) {
+                std::cerr << "binomo bot: QuotesStreamSettings json::parse_error, what: " << e.what()
+                   << " exception_id: " << e.id << std::endl;
+                return false;
+            }
+            catch(json::out_of_range& e) {
+                std::cerr << "binomo bot: QuotesStreamSettings json::out_of_range, what:" << e.what()
+                   << " exception_id: " << e.id << std::endl;
+                return false;
+            }
+            catch(json::type_error& e) {
+                std::cerr << "binomo bot: QuotesStreamSettings json::type_error, what:" << e.what()
+                   << " exception_id: " << e.id << std::endl;
+                return false;
+            }
+            catch(...) {
+                std::cerr << "binomo bot: QuotesStreamSettings json error" << std::endl;
+                return false;
+            }
+            return true;
+        }
+    };
+
+    class BotSettings {
+    public:
+        std::string named_pipe = "binomo_api_bot";          /**< Имя именованного канала */
+        //std::string sert_file = "curl-ca-bundle.crt";       /**< Файл сертификата */
+        //std::string cookie_file = "binomo.cookie";          /**< Файл cookie */
+        uint32_t repeated_bet_attempts_delay_ms = 1000;     /**< Задержка между попытками повторных сделок, в мс */
+        uint32_t delay_bets_ms = 1000;                      /**< Задержка между сделками, в мс */
+
+        bool parser(json &j) {
+            try {
+                json j_bot = j["bot"];
+                if(j_bot["named_pipe"] != nullptr) named_pipe = j_bot["named_pipe"];
+                if(j_bot["delay_bets_ms"] != nullptr) delay_bets_ms = j_bot["delay_bets_ms"];
+                if(j_bot["repeated_bet_attempts_delay_ms"] != nullptr) repeated_bet_attempts_delay_ms = j_bot["repeated_bet_attempts_delay_ms"];
+                if(j_bot["repeated_bet_attempts_delay"] != nullptr) repeated_bet_attempts_delay_ms = j_bot["repeated_bet_attempts_delay"];
+                if(j_bot["bet_attempts_delay"] != nullptr) repeated_bet_attempts_delay_ms = j_bot["bet_attempts_delay"];
+                if(j_bot["bet_attempts_delay_ms"] != nullptr) repeated_bet_attempts_delay_ms = j_bot["bet_attempts_delay_ms"];
+                if(j_bot["repeated_bet_delay_ms"] != nullptr) repeated_bet_attempts_delay_ms = j_bot["repeated_bet_delay_ms"];
+                if(j_bot["repeated_bet_delay"] != nullptr) repeated_bet_attempts_delay_ms = j_bot["repeated_bet_delay"];
+            }
+            catch(const json::parse_error& e) {
+                std::cerr << "binomo bot: BotSettings json::parse_error, what: " << e.what()
+                   << " exception_id: " << e.id << std::endl;
+                return false;
+            }
+            catch(json::out_of_range& e) {
+                std::cerr << "binomo bot: BotSettings json::out_of_range, what:" << e.what()
+                   << " exception_id: " << e.id << std::endl;
+                return false;
+            }
+            catch(json::type_error& e) {
+                std::cerr << "binomo bot: BotSettings json::type_error, what:" << e.what()
+                   << " exception_id: " << e.id << std::endl;
+                return false;
+            }
+            catch(...) {
+                std::cerr << "binomo bot: BotSettings json error" << std::endl;
+                return false;
+            }
+            return true;
+        }
+    };
+
+    class HotkeySettings {
+    public:
+        std::string key;
+        std::string symbol;
+        double amount = 0;
+        uint32_t duration = 1;
+        int32_t direction = 0;
+
+        bool parser(json &j) {
+            try {
+                key = j["key"];
+                symbol = j["symbol"];
+                amount = j["amount"];
+                duration = j["duration"];
+                direction = j["direction"];
+            }
+            catch(const json::parse_error& e) {
+                std::cerr << "binomo bot: HotkeySettings json::parse_error, what: " << e.what()
+                   << " exception_id: " << e.id << std::endl;
+                return false;
+            }
+            catch(json::out_of_range& e) {
+                std::cerr << "binomo bot: HotkeySettings json::out_of_range, what:" << e.what()
+                   << " exception_id: " << e.id << std::endl;
+                return false;
+            }
+            catch(json::type_error& e) {
+                std::cerr << "binomo bot: HotkeySettings json::type_error, what:" << e.what()
+                   << " exception_id: " << e.id << std::endl;
+                return false;
+            }
+            catch(...) {
+                std::cerr << "binomo bot: HotkeySettings json error" << std::endl;
+                return false;
+            }
+            return true;
+        }
+    };
+
+    class HotkeysSettings {
+    public:
+        std::vector<HotkeySettings> hotkey;
+        bool is_use = false;
+
+        bool parser(json &j) {
+            try {
+                json j_hotkeys = j["hotkeys"];
+                json j_array_hotkeys = j_hotkeys["keys"];
+                hotkey.resize(j_array_hotkeys.size());
+                for(size_t i = 0; i < j_array_hotkeys.size(); ++i) {
+                    hotkey[i].parser(j_array_hotkeys[i]);
+                }
+                if(j_hotkeys["use"] != nullptr) is_use = j_hotkeys["use"];
+            }
+            catch(const json::parse_error& e) {
+                std::cerr << "binomo bot: HotkeysSettings json::parse_error, what: " << e.what()
+                   << " exception_id: " << e.id << std::endl;
+                return false;
+            }
+            catch(json::out_of_range& e) {
+                std::cerr << "binomo bot: HotkeysSettings json::out_of_range, what:" << e.what()
+                   << " exception_id: " << e.id << std::endl;
+                return false;
+            }
+            catch(json::type_error& e) {
+                std::cerr << "binomo bot: HotkeysSettings json::type_error, what:" << e.what()
+                   << " exception_id: " << e.id << std::endl;
+                return false;
+            }
+            catch(...) {
+                std::cerr << "binomo bot: HotkeysSettings json error" << std::endl;
+                return false;
+            }
+            return true;
+        }
+    };
+
+    class TimeFilterSettings {
+    public:
+        std::vector<std::pair<uint32_t, uint32_t>> periods; /**< Фильтр торгового времени */
+        bool is_use = false;
+
+        bool parser(json &j) {
+            try {
+                if(j["time_filter"] != nullptr) {
+                    if(j["time_filter"]["use"] != nullptr) is_use = j["time_filter"]["use"];
+                    if(is_use) {
+                        json j_intervals = j["time_filter"]["intervals"];
+                        int32_t offset_time = 0;
+                        if(j["time_filter"]["offset"] != nullptr) {
+                            json j_offset = j["time_filter"]["offset"];
+                            const uint32_t offset_hour = j_offset["hour"];
+                            const uint32_t offset_minute = j_offset["minute"];
+                            const uint32_t offset_second = j_offset["second"];
+                            offset_time = offset_hour * xtime::SECONDS_IN_HOUR +  offset_minute * xtime::SECONDS_IN_MINUTE + offset_second;
+                        }
+                        if(j_intervals.is_array()) {
+                            const size_t time_filter_size = j_intervals.size();
+                            for(size_t i = 0; i < time_filter_size; ++i) {
+                                const uint32_t start_hour = j_intervals[i]["start"]["hour"];
+                                const uint32_t start_minute = j_intervals[i]["start"]["minute"];
+                                const uint32_t start_second = j_intervals[i]["start"]["second"];
+
+                                const uint32_t stop_hour = j_intervals[i]["stop"]["hour"];
+                                const uint32_t stop_minute = j_intervals[i]["stop"]["minute"];
+                                const uint32_t stop_second = j_intervals[i]["stop"]["second"];
+
+                                int32_t start_time = start_hour * xtime::SECONDS_IN_HOUR +  start_minute * xtime::SECONDS_IN_MINUTE + start_second + offset_time;
+                                int32_t stop_time = stop_hour * xtime::SECONDS_IN_HOUR +  stop_minute * xtime::SECONDS_IN_MINUTE + stop_second + offset_time;
+                                if(start_time < 0) start_time += xtime::SECONDS_IN_DAY;
+                                if(stop_time < 0) stop_time += xtime::SECONDS_IN_DAY;
+                                if(start_time > xtime::SECONDS_IN_DAY) start_time -= xtime::SECONDS_IN_DAY;
+                                if(stop_time > xtime::SECONDS_IN_DAY) stop_time -= xtime::SECONDS_IN_DAY;
+                                periods.push_back(std::make_pair((uint32_t)start_time, (uint32_t)stop_time));
+                            } // for
+                        } // if j_intervals.is_array()
+                    } // if is_use_time_filter
+                }
+            }
+            catch(const json::parse_error& e) {
+                std::cerr << "intrade.bar bot: json::parse_error, what: " << e.what()
+                   << " exception_id: " << e.id << std::endl;
+                return false;
+            }
+            catch(json::out_of_range& e) {
+                std::cerr << "intrade.bar bot: json::out_of_range, what:" << e.what()
+                   << " exception_id: " << e.id << std::endl;
+                return false;
+            }
+            catch(json::type_error& e) {
+                std::cerr << "intrade.bar bot: json::type_error, what:" << e.what()
+                   << " exception_id: " << e.id << std::endl;
+                return false;
+            }
+            catch(...) {
+                std::cerr << "intrade.bar bot: json error" << std::endl;
+                return false;
+            }
+            return true;
+        }
+    };
+
     /** \brief Класс настроек
      */
     class Settings {
     public:
         std::string json_settings_file;
-        std::string path;
-        std::string sert_file = "curl-ca-bundle.crt";       /**< Файл сертификата */
-        std::string cookie_file = "binomo.cookie";          /**< Файл cookie */
-        std::string named_pipe = "binomo_api_bot";          /**< Имя именованного канала */
-        std::string symbol_hst_suffix;                      /**< Суффикс имени символа автономных графиков */
-        std::vector<std::pair<std::string, uint32_t>> symbols;
-        uint32_t candles = 1440;                            /**< Количество баров истории */
-        uint32_t max_precisions = 6;                        /**< Максимальная точность котировок, выступает в роли ограничителя */
-        int64_t timezone = 0;                               /**< Часовой пояс - смещение метки времени котировок на указанное число секунд */
-        bool demo = true;                                   /**< Флаг демо аккаунта */
-        int volume_mode = 0;                                /**< Режим работы объемов (0 - отключено, 1 - подсчет тиков, 2 - взвешенный подсчет тиков) */
+
+        BinomoSettings binomo;
+        QuotesStreamSettings quotes_stream;
+        BotSettings bot;
+        HotkeysSettings hotkeys;
+        TimeFilterSettings time_filter;
 
         bool is_error = false;
-
 
         Settings() {};
 
@@ -81,40 +359,10 @@ namespace binomo_bot {
             }
 
             /* разбираем json сообщение */
-            try {
-                if(j["demo"] != nullptr) demo = j["demo"];
-                if(j["volume_mode"] != nullptr) volume_mode = j["volume_mode"];
-                if(j["named_pipe"] != nullptr) named_pipe = j["named_pipe"];
-                if(j["symbol_hst_suffix"] != nullptr) symbol_hst_suffix = j["symbol_hst_suffix"];
-                if(j["candles"] != nullptr) candles = j["candles"];
-                if(j["timezone"] != nullptr) timezone = j["timezone"];
-                if(j["path"] != nullptr) path = j["path"];
-                if(j["symbols"] != nullptr && j["symbols"].is_array()) {
-                    const size_t symbols_size = j["symbols"].size();
-                    for(size_t i = 0; i < symbols_size; ++i) {
-                        const std::string symbol = j["symbols"][i]["symbol"];
-                        const uint32_t period = j["symbols"][i]["period"];
-                        symbols.push_back(std::make_pair(symbol,period));
-                    }
-                }
-            }
-            catch(const json::parse_error& e) {
-                std::cerr << "binomo bot: Settings-->Settings() parser error (json::parse_error), what: " << std::string(e.what()) << std::endl;
-                is_error = true;
-            }
-            catch(const json::out_of_range& e) {
-                std::cerr << "binomo bot: Settings-->Settings() parser error (json::out_of_range), what: " << std::string(e.what()) << std::endl;
-                is_error = true;
-            }
-            catch(const json::type_error& e) {
-                std::cerr << "binomo bot: Settings-->Settings() parser error (json::type_error), what: " << std::string(e.what()) << std::endl;
-                is_error = true;
-            }
-            catch(...) {
-                std::cerr << "binomo bot: Settings-->Settings() parser error" << std::endl;
-                is_error = true;
-            }
-            if(path.size() == 0 || symbols.size() == 0) is_error = true;
+            if(!binomo.parser(j)) is_error = true;
+            if(!quotes_stream.parser(j)) is_error = true;
+            if(!bot.parser(j)) is_error = true;
+            if(!hotkeys.parser(j)) is_error = true;
         }
     };
 }

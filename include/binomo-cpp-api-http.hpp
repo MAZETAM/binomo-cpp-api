@@ -47,6 +47,11 @@ namespace binomo_api {
     private:
         std::string sert_file = "curl-ca-bundle.crt";   /**< Файл сертификата */
         std::string cookie_file = "binomo.cookie";
+
+        std::string authorization_token;
+        std::string device_id;
+        std::mutex auth_mutex;
+
         char error_buffer[CURL_ERROR_SIZE];
         static const int TIME_OUT = 60; 				/**< Время ожидания ответа сервера для разных запросов */
 
@@ -549,6 +554,31 @@ namespace binomo_api {
             return temp;
         }
 
+        /*
+        int parse_history() {
+            try {
+                json j = json::parse(response);
+				if(j["success"] != true) return;
+				json j_data = j["data"];
+                const size_t size_data = j_data.size();
+                for(size_t i = 0; i < size_data; ++i) {
+                    json j_canlde = j_data[i];
+					CANDLE candle;
+                    std::string str_iso = j_canlde["created_at"];
+                    xtime::DateTime date_time;
+					if(!xtime::convert_iso(str_iso, date_time)) continue;
+                    candle.timestamp = date_time.get_timestamp();
+                    candle.open = j_canlde["open"];
+                    candle.high = j_canlde["high"];
+                    candle.low = j_canlde["low"];
+                    candle.close = j_canlde["close"];
+                    candle.volume = 0;
+                    candles.push_back(candle);
+                }
+            } catch(...) {}
+        }
+        */
+
         void parse_history(
                 std::vector<CANDLE> &candles,
                 std::string &response) {
@@ -564,10 +594,10 @@ namespace binomo_api {
                     xtime::DateTime date_time;
 					if(!xtime::convert_iso(str_iso, date_time)) continue;
                     candle.timestamp = date_time.get_timestamp();
-                    candle.open = j_canlde["open"];//std::atof(std::string(j_canlde["open"]).c_str());
-                    candle.high = j_canlde["high"];//std::atof(std::string(j_canlde["high"]).c_str());
-                    candle.low = j_canlde["low"];//std::atof(std::string(j_canlde["low"]).c_str());
-                    candle.close = j_canlde["close"];//std::atof(std::string(j_canlde["close"]).c_str());
+                    candle.open = j_canlde["open"];
+                    candle.high = j_canlde["high"];
+                    candle.low = j_canlde["low"];
+                    candle.close = j_canlde["close"];
                     candle.volume = 0;
                     candles.push_back(candle);
                 }
@@ -589,10 +619,10 @@ namespace binomo_api {
                     xtime::DateTime date_time;
 					if(!xtime::convert_iso(str_iso, date_time)) continue;
                     candle.timestamp = date_time.get_timestamp();
-                    candle.open = j_canlde["open"];//std::atof(std::string(j_canlde["open"]).c_str());
-                    candle.high = j_canlde["high"];//std::atof(std::string(j_canlde["high"]).c_str());
-                    candle.low = j_canlde["low"];//std::atof(std::string(j_canlde["low"]).c_str());
-                    candle.close = j_canlde["close"];//std::atof(std::string(j_canlde["close"]).c_str());
+                    candle.open = j_canlde["open"];
+                    candle.high = j_canlde["high"];
+                    candle.low = j_canlde["low"];
+                    candle.close = j_canlde["close"];
                     candle.volume = 0;
                     candles[(uint64_t)candle.timestamp] = candle;
                 }
@@ -739,18 +769,53 @@ namespace binomo_api {
                 std::vector<CANDLE> temp;
                 parse_history(temp, response);
 
-                //if(temp.size() > 0) {
-                //    std::cout << xtime::get_str_date_time(temp.front().timestamp) << std::endl;
-                //    std::cout << xtime::get_str_date_time(temp.back().timestamp) << std::endl;
-                //}
-
                 candles.insert(candles.end(), temp.begin(), temp.end());
                 if(candles.size() > 0) if(candles.back().timestamp >= stop_date) break;
                 current_date += time_period;
-                //if(temp.back().timestamp >= stop_date) return;
             }
 
             return common::OK;
+        }
+
+        int get_assets() {
+            // https://api.binomo.com/platform/private/v3/assets?locale=ru
+            std::string url("https://api.binomo.com/platform/private/v3/assets?locale=en");
+            std::string response;
+
+            std::string temp1;
+            std::string temp2;
+            {
+                std::lock_guard<std::mutex> lock(auth_mutex);
+                temp1 = device_id;
+                temp2 = authorization_token;
+            }
+            if(temp1.size() == 0 || temp2.size() == 0) return common::AUTHORIZATION_ERROR;
+            //
+            HttpHeaders http_headers({
+                "User-Agent: Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:81.0) Gecko/20100101 Firefox/81.0",
+                "Accept: application/json, text/plain, */*",
+                "Accept-Language: ru-RU,ru;q=0.8,en-US;q=0.5,en;q=0.3",
+                "Accept-Encoding: gzip, deflate, br",
+                std::string("Device-Id: " + temp1),
+                "Version: 602419c9",
+                "Device-Type: web",
+                "Cache-Control: no-cache, no-store, must-revalidate",
+                "User-Timezone: Europe/Moscow",
+                std::string("Authorization-Token: " + temp2),
+                "Content-Type: application/json",
+                "Origin: https://binomo.com",
+                "Referer: https://binomo.com/trading",
+                "Connection: keep-alive"});
+            const std::string body;
+            int err = get_request(url, body, http_headers.get(), response, false, false);
+            std::cout << "response: " << std::endl << response << std::endl;
+            if(err != common::OK) return err;
+        }
+
+        void set_auth(const std::string &user_authorization_token, const std::string &user_device_id) {
+            std::lock_guard<std::mutex> lock(auth_mutex);
+            authorization_token = user_authorization_token;
+            device_id = user_device_id;
         }
 
         /** \brief Конструктор класса Binance Api для http запросов

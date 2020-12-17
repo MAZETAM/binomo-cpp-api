@@ -1,0 +1,149 @@
+https://api.binomo.com/platform/private/config?locale=ru
+
+:authority: api.binomo.com
+:method: GET
+:path: /platform/private/config?locale=ru
+:scheme: https
+accept: application/json, text/plain, */*
+accept-encoding: gzip, deflate, br
+accept-language: ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7
+authorization-token: 1e3b7346-20b9-488b-942f-eeb627d37f90
+cookie: __cfduid=dd477fb859f6db5c658781367d24f01eb1601172483; l=; ref.929a9991f7ee.group=5; authtoken=1e3b7346-20b9-488b-942f-eeb627d37f90; device_id=9cb95af656422cc52a29387c0eec98f5; device_type=web
+device-id: 9cb95af656422cc52a29387c0eec98f5
+device-type: web
+dnt: 1
+if-none-match: W/"02bffb591d6d236cb39edd33e701ffb2"
+origin: https://binomo.com
+referer: https://binomo.com/
+sec-fetch-dest: empty
+sec-fetch-mode: cors
+sec-fetch-site: same-site
+sec-gpc: 1
+user-agent: Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4238.0 Safari/537.36
+
+{"success":true,"data":{"authorized":true,"device_id":"9cb95af656422cc52a29387c0eec98f5","device_type":"web","currencies":{"default":"UAH","current":"USD","list":[{"unit":"$","iso":"USD","summs":{"binary_option":[100,500,1000,2000,5000,10000,20000,100000],"cfd":[],"do":[]},"limits":{"binary_option":{"min":100,"max":100000},"do":{"min":0,"max":0},"cfd":{"min":0,"max":0}},"pricing":[{"type":"standard","deposit":100},{"type":"gold","deposit":50000},{"type":"vip","deposit":100000}],"demo_balance":100000,"minimal_deposit":1000}]},"geo":"UA","captcha_sign_up":false,"captcha_sign_in":true,"trading_tools":["option","do"],"minimal_deposit":1000,"blocking_settings":{"sign_in":false,"sign_up":false,"trading":false,"support":false,"deposit":false,"withdraw":false},"api_url":"https://api.binomo.com","as":"as.binomo.com","ws":"ws.binomo.com","gtm_id_container":"GTM-KMXH88"},"errors":[]}
+
+
+
+
+https://api.binomo.com/platform/private/profile?locale=ru
+
+:authority: api.binomo.com
+:method: GET
+:path: /platform/private/profile?locale=ru
+:scheme: https
+accept: application/json, text/plain, */*
+accept-encoding: gzip, deflate, br
+accept-language: ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7
+authorization-token: 1e3b7346-20b9-488b-942f-eeb627d37f90
+cache-control: no-cache, no-store, must-revalidate
+content-type: application/json
+cookie: __cfduid=dd477fb859f6db5c658781367d24f01eb1601172483; l=; ref.929a9991f7ee.group=5; authtoken=1e3b7346-20b9-488b-942f-eeb627d37f90; device_id=9cb95af656422cc52a29387c0eec98f5; device_type=web
+device-id: 9cb95af656422cc52a29387c0eec98f5
+device-type: web
+dnt: 1
+origin: https://binomo.com
+referer: https://binomo.com/
+sec-fetch-dest: empty
+sec-fetch-mode: cors
+sec-fetch-site: same-site
+user-agent: Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4238.0 Safari/537.36
+user-timezone: Europe/Moscow
+version: a003e0ad
+
+{"success":true,"data":{"id":67721949,"avatar":null,"first_name":"","last_name":"","nickname":"","balance":0,"balance_version":0,"demo_balance":99783,"demo_balance_version":5,"bonus":0,"gender":"male","email":"test-master2020@protonmail.com","email_verified":false,"phone":null,"phone_verified":false,"phone_prefix":"380","receive_news":true,"receive_sms":false,"receive_notification":true,"country":"UA","country_name":"Украина","city":null,"city_name":null,"currency":"USD","birthday":"","activate":true,"password_is_set":true,"tutorial":false,"coupons":[],"free_deals":null,"blocked":false,"welcome_coupon":null,"demo":true,"first_account":"demo","agree_risk":false,"agreed":true,"hotkeys_enabled":false,"status_group":"free","docs_verified":false,"last_deposit":0,"registered_at":"2020-09-27T02:09:29Z","status_by_deposit":"free","status_id":1,"deposits_sum":0,"push_notification_categories":[]},"errors":[]}
+
+https://api.binomo.com/platform/private/trading_accounts?locale=ru
+
+:authority: api.binomo.com
+:method: GET
+:path: /platform/private/trading_accounts?locale=ru
+:scheme: https
+accept: application/json, text/plain, */*
+accept-encoding: gzip, deflate, br
+accept-language: ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7
+authorization-token: 1e3b7346-20b9-488b-942f-eeb627d37f90
+cache-control: no-cache, no-store, must-revalidate
+content-type: application/json
+cookie: __cfduid=dd477fb859f6db5c658781367d24f01eb1601172483; l=; ref.929a9991f7ee.group=5; authtoken=1e3b7346-20b9-488b-942f-eeb627d37f90; device_id=9cb95af656422cc52a29387c0eec98f5; device_type=web
+device-id: 9cb95af656422cc52a29387c0eec98f5
+device-type: web
+dnt: 1
+origin: https://binomo.com
+referer: https://binomo.com/
+sec-fetch-dest: empty
+sec-fetch-mode: cors
+sec-fetch-site: same-site
+user-agent: Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4238.0 Safari/537.36
+user-timezone: Europe/Moscow
+version: a003e0ad
+
+{"success":true,"data":[{"type":"real","name":"Реальный счет","balance":0,"balance_version":0,"currency_iso":"USD","entity":null},{"type":"demo","name":"Демо счет","balance":99783,"balance_version":5,"currency_iso":"USD","entity":null}],"errors":[]}
+
+https://api.binomo.com/platform/private/v3/assets?locale=ru
+
+:authority: api.binomo.com
+:method: GET
+:path: /platform/private/v3/assets?locale=ru
+:scheme: https
+accept: application/json, text/plain, */*
+accept-encoding: gzip, deflate, br
+accept-language: ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7
+authorization-token: 1e3b7346-20b9-488b-942f-eeb627d37f90
+cache-control: no-cache, no-store, must-revalidate
+content-type: application/json
+cookie: __cfduid=dd477fb859f6db5c658781367d24f01eb1601172483; l=; ref.929a9991f7ee.group=5; authtoken=1e3b7346-20b9-488b-942f-eeb627d37f90; device_id=9cb95af656422cc52a29387c0eec98f5; device_type=web
+device-id: 9cb95af656422cc52a29387c0eec98f5
+device-type: web
+dnt: 1
+origin: https://binomo.com
+referer: https://binomo.com/
+sec-fetch-dest: empty
+sec-fetch-mode: cors
+sec-fetch-site: same-site
+user-agent: Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4238.0 Safari/537.36
+user-timezone: Europe/Moscow
+version: a003e0ad
+
+{"success":true,"data":{"assets":[{"id":347,"name":"Crypto IDX","ric":"Z-CRY/IDX","type":1,"sort":4,"active":true,"icon":{"url":"https://binomo.com/uploads/asset/1601403874_pic_3fe78126.png"},"daily":false,"currencies":[],"trading_tools_settings":{"option":{"base_payment_rate_turbo":83,"base_payment_rate_binary":83,"payment_rate_turbo":83,"payment_rate_binary":83,"schedule":{"sun":[["00:00","24:00"]],"mon":[["00:00","24:00"]],"tue":[["00:00","24:00"]],"wed":[["00:00","24:00"]],"thu":[["00:00","24:00"]],"fri":[["00:00","24:00"]],"sat":[["00:00","24:00"]]},"enabled_account_types":["real","demo","tournament"]}}},{"id":337,"name":"AUD/NZD","ric":"AUD/NZD-HSFX","type":1,"sort":5,"active":true,"icon":{"url":"https://binomo.com/uploads/asset/1597662341_pic_70ba2c7f.png"},"daily":false,"currencies":[],"trading_tools_settings":{"option":{"base_payment_rate_turbo":80,"base_payment_rate_binary":80,"payment_rate_turbo":80,"payment_rate_binary":80,"schedule":{"sun":[["00:00","00:00"]],"mon":[["07:00","21:00"]],"tue":[["07:00","21:00"]],"wed":[["07:00","21:00"]],"thu":[["07:00","21:00"]],"fri":[["07:00","20:55"]],"sat":[["00:00","00:00"]]},"enabled_account_types":["real","demo","tournament"]}}},{"id":340,"name":"GBP/NZD","ric":"GBP/NZD-HSFX","type":1,"sort":6,"active":true,"icon":{"url":"https://binomo.com/uploads/asset/1597662514_pic_9377ac05.png"},"daily":false,"currencies":[],"trading_tools_settings":{"option":{"base_payment_rate_turbo":81,"base_payment_rate_binary":80,"payment_rate_turbo":81,"payment_rate_binary":80,"schedule":{"sun":[["00:00","00:00"]],"mon":[["07:00","21:00"]],"tue":[["07:00","21:00"]],"wed":[["07:00","21:00"]],"thu":[["07:00","21:00"]],"fri":[["07:00","20:55"]],"sat":[["00:00","00:00"]]},"enabled_account_types":["real","demo","tournament"]}}},{"id":339,"name":"EUR/NZD","ric":"EUR/NZD-HSFX","type":1,"sort":7,"active":true,"icon":{"url":"https://binomo.com/uploads/asset/1597662451_pic_e29fd413.png"},"daily":false,"currencies":[],"trading_tools_settings":{"option":{"base_payment_rate_turbo":80,"base_payment_rate_binary":80,"payment_rate_turbo":80,"payment_rate_binary":80,"schedule":{"sun":[["00:00","00:00"]],"mon":[["07:00","21:00"]],"tue":[["07:00","21:00"]],"wed":[["07:00","21:00"]],"thu":[["07:00","21:00"]],"fri":[["07:00","20:55"]],"sat":[["00:00","00:00"]]},"enabled_account_types":["real","demo","tournament"]}}},{"id":342,"name":"EUR/MXN","ric":"EUR/MXN-HSFX","type":1,"sort":8,"active":true,"icon":{"url":"https://binomo.com/uploads/asset/1597662419_pic_64dc5b17.png"},"daily":false,"currencies":[],"trading_tools_settings":{"option":{"base_payment_rate_turbo":80,"base_payment_rate_binary":80,"payment_rate_turbo":80,"payment_rate_binary":80,"schedule":{"sun":[["00:00","00:00"]],"mon":[["07:00","21:00"]],"tue":[["07:00","21:00"]],"wed":[["07:00","21:00"]],"thu":[["07:00","21:00"]],"fri":[["07:00","20:55"]],"sat":[["00:00","00:00"]]},"enabled_account_types":["real","demo","tournament"]}}},{"id":335,"name":"EUR IDX","ric":"EURX-DXF","type":1,"sort":15,"active":true,"icon":{"url":"https://binomo.com/uploads/asset/1588857420_pic_72002625.png"},"daily":false,"currencies":[],"trading_tools_settings":{"option":{"base_payment_rate_turbo":80,"base_payment_rate_binary":80,"payment_rate_turbo":80,"payment_rate_binary":80,"schedule":{"sun":[["00:00","00:00"]],"mon":[["07:00","19:00"]],"tue":[["07:00","19:00"]],"wed":[["07:00","19:00"]],"thu":[["07:00","19:00"]],"fri":[["07:00","18:55"]],"sat":[["00:00","00:00"]]},"enabled_account_types":["real","demo"]}}},{"id":336,"name":"JPY IDX","ric":"JPYX-DXF","type":1,"sort":16,"active":true,"icon":{"url":"https://binomo.com/uploads/asset/1588857387_pic_be033060.png"},"daily":false,"currencies":[],"trading_tools_settings":{"option":{"base_payment_rate_turbo":80,"base_payment_rate_binary":80,"payment_rate_turbo":80,"payment_rate_binary":80,"schedule":{"sun":[["00:00","00:00"]],"mon":[["07:00","19:00"]],"tue":[["07:00","19:00"]],"wed":[["07:00","19:00"]],"thu":[["07:00","19:00"]],"fri":[["07:00","18:55"]],"sat":[["00:00","00:00"]]},"enabled_account_types":["real","demo"]}}},{"id":187,"name":"EUR/USD ","ric":"EURO","type":1,"sort":17,"active":true,"icon":{"url":"https://binomo.com/uploads/asset/1464944084_pic_ac62f899.png"},"daily":false,"currencies":[],"trading_tools_settings":{"option":{"base_payment_rate_turbo":80,"base_payment_rate_binary":80,"payment_rate_turbo":80,"payment_rate_binary":80,"schedule":{"sun":[["00:00","00:00"]],"mon":[["07:00","24:00"]],"tue":[["00:00","24:00"]],"wed":[["00:00","24:00"]],"thu":[["00:00","24:00"]],"fri":[["00:00","20:55"]],"sat":[["00:00","00:00"]]},"enabled_account_types":["real","demo","tournament"]}}},{"id":282,"name":"CRY IDX","ric":"CRY/IDX","type":1,"sort":28,"active":true,"icon":{"url":"https://binomo.com/uploads/asset/1503676295_pic_e79ae467.png"},"daily":false,"currencies":[],"trading_tools_settings":{"option":{"base_payment_rate_turbo":0,"base_payment_rate_binary":0,"payment_rate_turbo":0,"payment_rate_binary":0,"schedule":{"sun":[["00:00","24:00"]],"mon":[["00:00","24:00"]],"tue":[["00:00","24:00"]],"wed":[["00:00","24:00"]],"thu":[["00:00","24:00"]],"fri":[["00:00","24:00"]],"sat":[["00:00","24:00"]]},"enabled_account_types":["real","demo","tournament"]}}},{"id":323,"name":"BTC/LTC","ric":"BTC/LTC","type":1,"sort":29,"active":true,"icon":{"url":"https://binomo.com/uploads/asset/1575536873_pic_fb5a22f9.png"},"daily":false,"currencies":[],"trading_tools_settings":{"option":{"base_payment_rate_turbo":30,"base_payment_rate_binary":30,"payment_rate_turbo":30,"payment_rate_binary":30,"schedule":{"sun":[["00:00","24:00"]],"mon":[["00:00","24:00"]],"tue":[["00:00","24:00"]],"wed":[["00:00","24:00"]],"thu":[["00:00","24:00"]],"fri":[["00:00","24:00"]],"sat":[["00:00","24:00"]]},"enabled_account_types":["real","demo"]}}},{"id":205,"name":"AUD/USD ","ric":"AUD/USD","type":1,"sort":31,"active":true,"icon":{"url":"https://binomo.com/uploads/asset/1464943164_pic_08f731b1.png"},"daily":false,"currencies":["AUD","USD"],"trading_tools_settings":{"option":{"base_payment_rate_turbo":80,"base_payment_rate_binary":80,"payment_rate_turbo":80,"payment_rate_binary":80,"schedule":{"sun":[["00:00","00:00"]],"mon":[["07:00","24:00"]],"tue":[["00:00","24:00"]],"wed":[["00:00","24:00"]],"thu":[["00:00","24:00"]],"fri":[["00:00","20:55"]],"sat":[["00:00","00:00"]]},"enabled_account_types":["real","demo","tournament"]}}},{"id":206,"name":"AUD/CAD ","ric":"AUD/CAD","type":1,"sort":32,"active":true,"icon":{"url":"https://binomo.com/uploads/asset/1482226693_pic_6b052b71.png"},"daily":false,"currencies":["AUD","CAD"],"trading_tools_settings":{"option":{"base_payment_rate_turbo":80,"base_payment_rate_binary":80,"payment_rate_turbo":80,"payment_rate_binary":80,"schedule":{"sun":[["00:00","00:00"]],"mon":[["07:00","24:00"]],"tue":[["00:00","24:00"]],"wed":[["00:00","24:00"]],"thu":[["00:00","24:00"]],"fri":[["00:00","20:55"]],"sat":[["00:00","00:00"]]},"enabled_account_types":["real","demo","tournament"]}}},{"id":223,"name":"EUR/JPY ","ric":"EUR/JPY","type":1,"sort":34,"active":true,"icon":{"url":"https://binomo.com/uploads/asset/1464944031_pic_910b9d29.png"},"daily":false,"currencies":["EUR","JPY"],"trading_tools_settings":{"option":{"base_payment_rate_turbo":80,"base_payment_rate_binary":80,"payment_rate_turbo":80,"payment_rate_binary":80,"schedule":{"sun":[["00:00","00:00"]],"mon":[["07:00","21:00"]],"tue":[["07:00","21:00"]],"wed":[["07:00","21:00"]],"thu":[["07:00","21:00"]],"fri":[["07:00","20:55"]],"sat":[["00:00","00:00"]]},"enabled_account_types":["real","demo","tournament"]}}},{"id":210,"name":"AUD/JPY ","ric":"AUD/JPY","type":1,"sort":36,"active":true,"icon":{"url":"https://binomo.com/uploads/asset/1464942990_pic_97b0f7f4.png"},"daily":false,"currencies":["AUD","JPY"],"trading_tools_settings":{"option":{"base_payment_rate_turbo":80,"base_payment_rate_binary":80,"payment_rate_turbo":80,"payment_rate_binary":80,"schedule":{"sun":[["00:00","00:00"]],"mon":[["07:00","24:00"]],"tue":[["00:00","24:00"]],"wed":[["00:00","24:00"]],"thu":[["00:00","24:00"]],"fri":[["00:00","20:55"]],"sat":[["00:00","00:00"]]},"enabled_account_types":["real","demo","tournament"]}}},{"id":209,"name":"USD/JPY ","ric":"USD/JPY","type":1,"sort":37,"active":true,"icon":{"url":"https://binomo.com/uploads/asset/1464945553_pic_2e92340a.png"},"daily":false,"currencies":["USD","JPY"],"trading_tools_settings":{"option":{"base_payment_rate_turbo":80,"base_payment_rate_binary":80,"payment_rate_turbo":80,"payment_rate_binary":80,"schedule":{"sun":[["00:00","00:00"]],"mon":[["07:00","16:00"]],"tue":[["00:00","16:00"]],"wed":[["00:00","16:00"]],"thu":[["00:00","16:00"]],"fri":[["00:00","16:00"]],"sat":[["00:00","00:00"]]},"enabled_account_types":["real","demo","tournament"]}}},{"id":224,"name":"USD/CAD ","ric":"USD/CAD","type":1,"sort":40,"active":true,"icon":{"url":"https://binomo.com/uploads/asset/1464945494_pic_89ac2edb.png"},"daily":false,"currencies":["USD","CAD"],"trading_tools_settings":{"option":{"base_payment_rate_turbo":80,"base_payment_rate_binary":80,"payment_rate_turbo":80,"payment_rate_binary":80,"schedule":{"sun":[["00:00","00:00"]],"mon":[["07:00","24:00"]],"tue":[["00:00","24:00"]],"wed":[["00:00","24:00"]],"thu":[["00:00","24:00"]],"fri":[["00:00","20:55"]],"sat":[["00:00","00:00"]]},"enabled_account_types":["real","demo","tournament"]}}},{"id":302,"name":"EUR/CAD (OTC)","ric":"Z-EUR/CAD","type":1,"sort":42,"active":true,"icon":{"url":"https://binomo.com/uploads/asset/1544621974_pic_e511e6f0.png"},"daily":false,"currencies":[],"trading_tools_settings":{"option":{"base_payment_rate_turbo":80,"base_payment_rate_binary":0,"payment_rate_turbo":80,"payment_rate_binary":0,"schedule":{"sun":[["00:00","24:00"]],"mon":[["00:00","07:00"]],"tue":[["00:00","00:00"]],"wed":[["00:00","00:00"]],"thu":[["00:00","00:00"]],"fri":[["21:00","24:00"]],"sat":[["00:00","24:00"]]},"enabled_account_types":["real","demo","tournament"]}}},{"id":208,"name":"NZD/USD ","ric":"NZD/USD","type":1,"sort":48,"active":true,"icon":{"url":"https://binomo.com/uploads/asset/1464945288_pic_1d1596c7.png"},"daily":false,"currencies":["NZD","USD"],"trading_tools_settings":{"option":{"base_payment_rate_turbo":80,"base_payment_rate_binary":80,"payment_rate_turbo":80,"payment_rate_binary":80,"schedule":{"sun":[["00:00","00:00"]],"mon":[["07:00","24:00"]],"tue":[["00:00","24:00"]],"wed":[["00:00","24:00"]],"thu":[["00:00","24:00"]],"fri":[["00:00","20:55"]],"sat":[["00:00","00:00"]]},"enabled_account_types":["real","demo","tournament"]}}},{"id":202,"name":"GBP/USD ","ric":"GBP/USD","type":1,"sort":51,"active":true,"icon":{"url":"https://binomo.com/uploads/asset/1464944668_pic_64d15381.png"},"daily":false,"currencies":["GBP","USD"],"trading_tools_settings":{"option":{"base_payment_rate_turbo":80,"base_payment_rate_binary":80,"payment_rate_turbo":80,"payment_rate_binary":80,"schedule":{"sun":[["00:00","00:00"]],"mon":[["07:00","20:00"]],"tue":[["07:00","20:00"]],"wed":[["07:00","20:00"]],"thu":[["07:00","20:00"]],"fri":[["07:00","20:00"]],"sat":[["00:00","00:00"]]},"enabled_account_types":["real","demo","tournament"]}}},{"id":232,"name":"Gold","ric":"XAU/USD-HSFX","type":5,"sort":52,"active":true,"icon":{"url":"https://binomo.com/uploads/asset/1464945187_pic_8c5d2b6d.png"},"daily":false,"currencies":[],"trading_tools_settings":{"option":{"base_payment_rate_turbo":0,"base_payment_rate_binary":60,"payment_rate_turbo":0,"payment_rate_binary":60,"schedule":{"sun":[["00:00","00:00"]],"mon":[["04:00","19:00"]],"tue":[["04:00","19:00"]],"wed":[["04:00","19:00"]],"thu":[["04:00","19:00"]],"fri":[["04:00","19:00"]],"sat":[["00:00","00:00"]]},"enabled_account_types":["real","demo","tournament"]}}},{"id":299,"name":"USD/JPY (OTC)","ric":"Z-USD/JPY","type":1,"sort":54,"active":true,"icon":{"url":"https://binomo.com/uploads/asset/1527168127_pic_7dd5d38a.png"},"daily":false,"currencies":[],"trading_tools_settings":{"option":{"base_payment_rate_turbo":81,"base_payment_rate_binary":0,"payment_rate_turbo":81,"payment_rate_binary":0,"schedule":{"sun":[["00:00","24:00"]],"mon":[["00:00","07:00"]],"tue":[["00:00","00:00"]],"wed":[["00:00","00:00"]],"thu":[["00:00","00:00"]],"fri":[["21:00","24:00"]],"sat":[["00:00","24:00"]]},"enabled_account_types":["real","demo","tournament"]}}},{"id":241,"name":"GBP/USD (OTC)","ric":"Z-GBP/USD","type":1,"sort":56,"active":true,"icon":{"url":"https://binomo.com/uploads/asset/1528555059_pic_de0af932.png"},"daily":false,"currencies":[],"trading_tools_settings":{"option":{"base_payment_rate_turbo":83,"base_payment_rate_binary":0,"payment_rate_turbo":83,"payment_rate_binary":0,"schedule":{"sun":[["00:00","24:00"]],"mon":[["00:00","07:00"]],"tue":[["00:00","00:00"]],"wed":[["00:00","00:00"]],"thu":[["00:00","00:00"]],"fri":[["21:00","24:00"]],"sat":[["00:00","24:00"]]},"enabled_account_types":["real","demo","tournament"]}}},{"id":235,"name":"EUR/USD (OTC)","ric":"Z-EUR/USD","type":1,"sort":58,"active":true,"icon":{"url":"https://binomo.com/uploads/asset/1526673927_pic_488b90c9.png"},"daily":false,"currencies":[],"trading_tools_settings":{"option":{"base_payment_rate_turbo":83,"base_payment_rate_binary":0,"payment_rate_turbo":83,"payment_rate_binary":0,"schedule":{"sun":[["00:00","24:00"]],"mon":[["00:00","07:00"]],"tue":[["00:00","00:00"]],"wed":[["00:00","00:00"]],"thu":[["00:00","00:00"]],"fri":[["21:00","24:00"]],"sat":[["00:00","24:00"]]},"enabled_account_types":["real","demo","tournament"]}}},{"id":217,"name":"USD/CHF ","ric":"USD/CHF","type":1,"sort":61,"active":true,"icon":{"url":"https://binomo.com/uploads/asset/1464945527_pic_601caab6.png"},"daily":false,"currencies":["USD","CHF"],"trading_tools_settings":{"option":{"base_payment_rate_turbo":80,"base_payment_rate_binary":80,"payment_rate_turbo":80,"payment_rate_binary":80,"schedule":{"sun":[["00:00","00:00"]],"mon":[["07:00","19:00"]],"tue":[["07:00","19:00"]],"wed":[["07:00","19:00"]],"thu":[["07:00","19:00"]],"fri":[["07:00","19:00"]],"sat":[["00:00","00:00"]]},"enabled_account_types":["real","demo","tournament"]}}},{"id":244,"name":"AUD/CAD (OTC)","ric":"Z-AUD/CAD","type":1,"sort":66,"active":true,"icon":{"url":"https://binomo.com/uploads/asset/1469123535_pic_aca00bbe.png"},"daily":false,"currencies":[],"trading_tools_settings":{"option":{"base_payment_rate_turbo":81,"base_payment_rate_binary":0,"payment_rate_turbo":81,"payment_rate_binary":0,"schedule":{"sun":[["00:00","24:00"]],"mon":[["00:00","07:00"]],"tue":[["00:00","00:00"]],"wed":[["00:00","00:00"]],"thu":[["00:00","00:00"]],"fri":[["21:00","24:00"]],"sat":[["00:00","24:00"]]},"enabled_account_types":["real","demo","tournament"]}}},{"id":276,"name":"Bitcoin","ric":"BTC/USD","type":1,"sort":87,"active":true,"icon":{"url":"https://binomo.com/uploads/asset/1477286309_pic_f504719d.png"},"daily":false,"currencies":[],"trading_tools_settings":{"option":{"base_payment_rate_turbo":30,"base_payment_rate_binary":30,"payment_rate_turbo":30,"payment_rate_binary":30,"schedule":{"sun":[["00:00","24:00"]],"mon":[["00:00","24:00"]],"tue":[["00:00","24:00"]],"wed":[["00:00","24:00"]],"thu":[["00:00","24:00"]],"fri":[["00:00","24:00"]],"sat":[["00:00","24:00"]]},"enabled_account_types":["real","demo","tournament"]}}},{"id":237,"name":"GBP/JPY (OTC)","ric":"Z-GBP/JPY","type":1,"sort":88,"active":true,"icon":{"url":"https://binomo.com/uploads/asset/1469123549_pic_5fec18fb.png"},"daily":false,"currencies":[],"trading_tools_settings":{"option":{"base_payment_rate_turbo":82,"base_payment_rate_binary":0,"payment_rate_turbo":82,"payment_rate_binary":0,"schedule":{"sun":[["00:00","24:00"]],"mon":[["00:00","07:00"]],"tue":[["00:00","00:00"]],"wed":[["00:00","00:00"]],"thu":[["00:00","00:00"]],"fri":[["21:00","24:00"]],"sat":[["00:00","24:00"]]},"enabled_account_types":["real","demo","tournament"]}}},{"id":212,"name":"CHF/JPY ","ric":"CHF/JPY","type":1,"sort":92,"active":true,"icon":{"url":"https://binomo.com/uploads/asset/1537315329_pic_05c25f9a.png"},"daily":false,"currencies":[],"trading_tools_settings":{"option":{"base_payment_rate_turbo":80,"base_payment_rate_binary":80,"payment_rate_turbo":80,"payment_rate_binary":80,"schedule":{"sun":[["00:00","00:00"]],"mon":[["07:00","21:00"]],"tue":[["07:00","21:00"]],"wed":[["07:00","21:00"]],"thu":[["07:00","21:00"]],"fri":[["07:00","20:55"]],"sat":[["00:00","00:00"]]},"enabled_account_types":["real","demo","tournament"]}}},{"id":94,"name":"NZD/JPY","ric":"NZD/JPY","type":1,"sort":94,"active":true,"icon":{"url":"https://binomo.com/uploads/asset/1537315841_pic_9ffcdad6.png"},"daily":false,"currencies":[],"trading_tools_settings":{"option":{"base_payment_rate_turbo":80,"base_payment_rate_binary":80,"payment_rate_turbo":80,"payment_rate_binary":80,"schedule":{"sun":[["00:00","00:00"]],"mon":[["07:00","21:00"]],"tue":[["07:00","21:00"]],"wed":[["07:00","21:00"]],"thu":[["07:00","21:00"]],"fri":[["07:00","20:55"]],"sat":[["00:00","00:00"]]},"enabled_account_types":["real","demo","tournament"]}}}]},"errors":[]}
+
+
+wss://ws.binomo.com/?authtoken=1e3b7346-20b9-488b-942f-eeb627d37f90&device=web&device_id=9cb95af656422cc52a29387c0eec98f5&v=2&vsn=2.0.0
+
+отправлено
+{"topic":"base","event":"phx_join","payload":{},"ref":"5","join_ref":"5"}
+получено
+{"event":"phx_reply","payload":{"response":{},"status":"ok"},"ref":"5","topic":"base"}
+отправлено
+{"topic":"base","event":"ping","payload":{},"ref":"7","join_ref":"5"}
+получено
+{"event":"phx_reply","payload":{"response":{"now":"2020-10-10T12:52:07.051788Z"},"status":"ok"},"ref":"7","topic":"base"}
+отправлено
+{"topic":"base","event":"create_deal","payload":{"asset":"BTC/LTC","asset_id":323,"asset_name":"BTC/LTC","amount":100,"source":"mouse","trend":"put","expire_at":1602334380,"created_at":1602334336243,"option_type":"turbo","deal_type":"demo","tournament_id":null},"ref":"8","join_ref":"5"}
+получено
+{"event":"change_balance","payload":{"balance":0,"balance_version":0,"bonus":null,"demo_balance":99683,"demo_balance_version":6,"trading_accounts":[{"balance":0,"balance_version":0,"type":"real"},{"balance":99683,"balance_version":6,"type":"demo"}]},"ref":null,"topic":"base"}
+{"event":"phx_reply","payload":{"response":{"uuid":"8d29f2b7-4ff0-4773-92ef-d8fadcd3a7a1"},"status":"ok"},"ref":"8","topic":"base"}
+{"event":"deal_created","payload":{"amount":100,"asset_id":323,"asset_name":"BTC/LTC","asset_ric":"BTC/LTC","close_quote_created_at":"2020-10-10T12:53:00Z","close_rate":0.0,"created_at":"2020-10-10T12:52:17.030662Z","deal_type":"demo","id":1817027650,"name":"BTC/LTC","open_quote_created_at":"2020-10-10T12:52:18.000000Z","open_rate":229.915204,"option_type":"turbo","payment":130.0,"payment_rate":30,"requested_at":"2020-10-10T12:52:17.020452","ric":"BTC/LTC","status":"open","trend":"put","uuid":"8d29f2b7-4ff0-4773-92ef-d8fadcd3a7a1","win":0},"ref":null,"topic":"base"}
+{"event":"close_deal_batch","payload":{"end_rate":230.001177,"finished_at":"2020-10-10T12:53:00Z","ric":"BTC/LTC"},"ref":null,"topic":"base"}
+{"event":"change_balance","payload":{"balance":0,"balance_version":0,"bonus":null,"demo_balance":99683,"demo_balance_version":7,"trading_accounts":[{"balance":0,"balance_version":0,"type":"real"},{"balance":99683,"balance_version":7,"type":"demo"}]},"ref":null,"topic":"base"}
+отправлено
+{"topic":"phoenix","event":"heartbeat","payload":{},"ref":"9"}
+{"topic":"base","event":"ping","payload":{},"ref":"10","join_ref":"5"}
+получено
+{"event":"phx_reply","payload":{"response":{},"status":"ok"},"ref":"9","topic":"phoenix"}
+{"event":"phx_reply","payload":{"response":{"now":"2020-10-10T12:53:06.900727Z"},"status":"ok"},"ref":"10","topic":"base"}
+{"event":"majority_opinion","payload":{"asset":"Z-EUR/USD","call":42,"put":58},"ref":null,"topic":"base"}
+{"event":"majority_opinion","payload":{"asset":"Z-GBP/JPY","call":61,"put":39},"ref":null,"topic":"base"}
+отправлено
+{"topic":"base","event":"ping","payload":{},"ref":"12","join_ref":"5"}
+получено
+{"event":"phx_reply","payload":{"response":{},"status":"ok"},"ref":"11","topic":"phoenix"}
+{"event":"phx_reply","payload":{"response":{"now":"2020-10-10T12:54:06.905553Z"},"status":"ok"},"ref":"12","topic":"base"}
+{"event":"majority_opinion","payload":{"asset":"Z-EUR/USD","call":38,"put":62},"ref":null,"topic":"base"}
+отправлено
+{"topic":"phoenix","event":"heartbeat","payload":{},"ref":"15"}
+{"topic":"base","event":"ping","payload":{},"ref":"16","join_ref":"5"}
+получено
+{"event":"phx_reply","payload":{"response":{},"status":"ok"},"ref":"15","topic":"phoenix"}
+{"event":"phx_reply","payload":{"response":{"now":"2020-10-10T12:56:06.934260Z"},"status":"ok"},"ref":"16","topic":"base"}
+{"event":"majority_opinion","payload":{"asset":"Z-EUR/USD","call":25,"put":75},"ref":null,"topic":"base"}
